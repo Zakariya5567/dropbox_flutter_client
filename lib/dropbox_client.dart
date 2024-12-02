@@ -96,6 +96,35 @@ class Dropbox {
     }
   }
 
+  /// Authorize using Dropbox app or web browser With offline access token
+  static Future<Map<String, dynamic>> authorizePKCE(
+      {required String clientId}) async {
+    try {
+      // Call the platform method and expect a map response
+      final result = await _channel.invokeMethod<Map<dynamic, dynamic>>(
+          'authorize', {'clientId': clientId});
+
+      if (result != null) {
+        return {
+          'success': result['success'] ?? false,
+          'message': result['message'] ??
+              'Authorization result received, but no message provided',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'No response from authorization',
+        };
+      }
+    } catch (e) {
+      // Catch any exception that occurs during method invocation and return an error response
+      return {
+        'success': false,
+        'message': 'Authorization failed: $e',
+      };
+    }
+  }
+
   /// Authorize with AccessToken
 
   static Future<Map<String, dynamic>> authorizeWithAccessToken(
@@ -132,12 +161,13 @@ class Dropbox {
       // Attempt to invoke the platform method to retrieve the access token
       final result = await _channel.invokeMethod('getAccessToken');
 
-      // If result is null, treat it as token not available 
+      // If result is null, treat it as token not available
       if (result != null) {
         print("Access token not available.");
         return {
           'success': result['success'] ?? false,
-          'message': result['message'] ?? 'Access token succeeded, but no message provided',
+          'message': result['message'] ??
+              'Access token succeeded, but no message provided',
           'accessToken': result['accessToken'] ?? null,
         };
       } else {

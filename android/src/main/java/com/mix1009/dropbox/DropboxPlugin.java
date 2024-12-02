@@ -134,6 +134,7 @@ public class DropboxPlugin implements FlutterPlugin, MethodCallHandler, Activity
     // Retrieve the OAuth2 authentication token
     String authToken = Auth.getOAuth2Token();
 
+
     // If an authorization token is found, initialize the Dropbox client
     if (authToken != null) {
       // Create a new request configuration with the app's clientId
@@ -198,9 +199,34 @@ public class DropboxPlugin implements FlutterPlugin, MethodCallHandler, Activity
       }
 
 
-      case "authorize":
+      case "authorizePKCE":
         try {
           // Start OAuth2 authentication
+          String clientId = call.argument("clientId");
+
+          sDbxRequestConfig = DbxRequestConfig.newBuilder(clientId)
+                  .withHttpRequestor(new OkHttp3Requestor(OkHttp3Requestor.defaultOkHttpClient()))
+                  .build();
+          Auth.startOAuth2PKCE(DropboxPlugin.activity , appInfo.getKey(),sDbxRequestConfig);
+
+          // Return success response
+          Map<String, Object> successResponse = new HashMap<>();
+          successResponse.put("success", true);
+          successResponse.put("message", "Authorization started successfully.");
+          result.success(successResponse);  // Return success message
+        } catch (Exception e) {
+          // Handle any exceptions that occur during the authorization process
+          Map<String, Object> errorResponse = new HashMap<>();
+          errorResponse.put("success", false);
+          errorResponse.put("message", "Authorization failed: " + e.getMessage());
+          result.success(errorResponse);  // Return failure message
+        }
+        break;
+
+     case "authorize":
+        try {
+          // Start OAuth2 authentication
+
           Auth.startOAuth2Authentication(DropboxPlugin.activity, appInfo.getKey());
 
           // Return success response
@@ -217,7 +243,7 @@ public class DropboxPlugin implements FlutterPlugin, MethodCallHandler, Activity
         }
         break;
 
-      case "authorizeWithAccessToken":
+     case "authorizeWithAccessToken":
         try {
           // Retrieve the access token from the method call arguments
           String argAccessToken = call.argument("accessToken");
