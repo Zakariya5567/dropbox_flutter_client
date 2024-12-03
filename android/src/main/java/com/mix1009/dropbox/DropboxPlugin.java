@@ -15,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.dropbox.core.DbxAppInfo;
+import com.dropbox.core.DbxHost;
 import com.dropbox.core.json.JsonReadException;
 import com.dropbox.core.DbxAuthFinish;
 import com.dropbox.core.DbxDownloader;
@@ -207,7 +208,14 @@ public class DropboxPlugin implements FlutterPlugin, MethodCallHandler, Activity
           sDbxRequestConfig = DbxRequestConfig.newBuilder(clientId)
                   .withHttpRequestor(new OkHttp3Requestor(OkHttp3Requestor.defaultOkHttpClient()))
                   .build();
-          Auth.startOAuth2PKCE(DropboxPlugin.activity , appInfo.getKey(),sDbxRequestConfig);
+
+          Auth.startOAuth2PKCE(
+                  DropboxPlugin.activity ,
+                  appInfo.getKey(),
+                  sDbxRequestConfig,
+                  DbxHost.DEFAULT
+          );
+
 
           // Return success response
           Map<String, Object> successResponse = new HashMap<>();
